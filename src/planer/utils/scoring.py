@@ -6,7 +6,8 @@ planer: per-component flatness, orientation and proximity scoring utilities
 import numpy as np
 
 # Import internal planer objects
-from planer.utils.schema import Component, Pca, Scores
+from planer.utils.components import extract_components
+from planer.utils.schema import Component, Pca, Scores, ScoredComponent
 
 # MIN_VOXELS: minimum number of voxels needed within a component to run PCA
 MIN_VOXELS = 30
@@ -58,3 +59,8 @@ def score_component(component: Component, shape: tuple[int, int, int]) -> Scores
         orientation=orientation_score(pca),
         proximity=proximity_score(component.coords, shape),
     )
+
+# score_volume: label a volume and score every component, shared by trim and inspect
+def score_volume(volume: np.ndarray) -> list[ScoredComponent]:
+    shape = tuple(int(n) for n in volume.shape)
+    return [ScoredComponent(component=component, scores=score_component(component, shape)) for component in extract_components(volume)]

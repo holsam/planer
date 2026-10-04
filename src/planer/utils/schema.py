@@ -24,5 +24,11 @@ class Scores:
     orientation: float
     proximity: float
 
+# ScoredComponent: a component and its resulting scores
+@dataclass(frozen=True)
+class ScoredComponent:
+    component: Component
+    scores: Scores
+
 # VoxelSize: voxel edge lengths in Å (x,y,z)
 type VoxelSize = tuple[float, float, float]

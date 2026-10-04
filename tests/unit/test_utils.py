@@ -10,7 +10,7 @@ from pathlib import Path
 from planer.utils.components import extract_components
 from planer.utils.io import read_mrc, write_mrc
 from planer.utils.schema import Component
-from planer.utils.scoring import score_component
+from planer.utils.scoring import score_component, score_volume
 
 # SHAPE: example volume shape
 SHAPE = (64, 64, 64)
@@ -101,3 +101,13 @@ class TestScoring:
         mask[0, 0:3, 0:3] = True
         scores = score_component(_component(mask), SHAPE)
         assert (scores.flatness, scores.orientation, scores.proximity) == (0.0, 0.0, 0.0)
+
+    # test_score_volume: a slab and a blob in one volume are scored separately
+    def test_score_volume(self) -> None:
+        volume = np.zeros(SHAPE, dtype=np.int8)
+        volume[10:50, 10:50, 1] = 1
+        volume[30:38, 30:38, 30:38] = 1
+        scored = score_volume(volume)
+        assert len(scored) == 2
+        assert scored[0].scores.flatness > 0.95
+        assert scored[1].scores.flatness < 0.1
