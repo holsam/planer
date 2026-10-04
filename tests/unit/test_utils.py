@@ -7,7 +7,30 @@ import numpy as np, pytest
 from pathlib import Path
 
 # Import internal planer objects
+from planer.utils.components import extract_components
 from planer.utils.io import read_mrc, write_mrc
+
+# TestComponents: tests for src/planer/utils/components.py
+class TestComponents:
+    # test_separate_blobs: two disjointed regions give two components
+    def test_separate_blobs_return_different_components(self) -> None:
+        volume = np.zeros((20, 20, 20), dtype=np.int8)
+        volume[2:4, 2:4, 2:4] = 1
+        volume[10:13, 10:13, 10:13] = 1
+        components = extract_components(volume)
+        assert [len(c.coords) for c in components] == [8, 27]
+        assert components[1].coords.min(axis=0).tolist() == [10, 10, 10]
+
+    # test_diagonal_joins: 26-connectivity joins corner-touching voxels
+    def test_diagonal_joins_corner_voxels(self) -> None:
+        volume = np.zeros((4, 4, 4), dtype=np.int8)
+        volume[0, 0, 0] = 1
+        volume[1, 1, 1] = 1
+        assert len(extract_components(volume)) == 1
+
+    # test_empty: no foreground gives no components
+    def test_all_zero_gives_no_components(self) -> None:
+        assert extract_components(np.zeros((4, 4, 4), dtype=np.int8)) == []
 
 # TestIo: tests for src/planer/utils/io.py
 class TestIo:
