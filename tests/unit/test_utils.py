@@ -9,10 +9,19 @@ from pathlib import Path
 # Import internal planer objects
 from planer.utils.components import extract_components
 from planer.utils.io import read_mrc, write_mrc
+from planer.utils.schema import Component
+from planer.utils.scoring import score_component
+
+# SHAPE: example volume shape
+SHAPE = (64, 64, 64)
+
+# _component: build a component from a boolean mask
+def _component(mask: np.ndarray) -> Component:
+    return Component(label=1, coords=np.argwhere(mask).astype(np.int32))
 
 # TestComponents: tests for src/planer/utils/components.py
 class TestComponents:
-    # test_separate_blobs: two disjointed regions give two components
+    # test_separate_blobs_return_different_components: two disjointed regions give two components
     def test_separate_blobs_return_different_components(self) -> None:
         volume = np.zeros((20, 20, 20), dtype=np.int8)
         volume[2:4, 2:4, 2:4] = 1
@@ -21,14 +30,14 @@ class TestComponents:
         assert [len(c.coords) for c in components] == [8, 27]
         assert components[1].coords.min(axis=0).tolist() == [10, 10, 10]
 
-    # test_diagonal_joins: 26-connectivity joins corner-touching voxels
+    # test_diagonal_joins_corner_voxels: 26-connectivity joins corner-touching voxels
     def test_diagonal_joins_corner_voxels(self) -> None:
         volume = np.zeros((4, 4, 4), dtype=np.int8)
         volume[0, 0, 0] = 1
         volume[1, 1, 1] = 1
         assert len(extract_components(volume)) == 1
 
-    # test_empty: no foreground gives no components
+    # test_all_zero_gives_no_components: no foreground gives no components
     def test_all_zero_gives_no_components(self) -> None:
         assert extract_components(np.zeros((4, 4, 4), dtype=np.int8)) == []
 
@@ -49,3 +58,46 @@ class TestIo:
         with pytest.raises(ValueError):
             write_mrc(tmp_path / 'a.mrc', data, (1.0, 1.0, 1.0))
         write_mrc(tmp_path / 'a.mrc', data, (1.0, 1.0, 1.0), overwrite=True)
+
+# TestScoring: tests for src/planer/utils/scoring.py
+class TestScoring:
+    # test_edge_slab_all_score_high: a flat, axis-aligned slab on a face scores high
+    def test_edge_slab_all_score_high(self) -> None:
+        mask = np.zeros(SHAPE, dtype=bool)
+        mask[10:50, 10:50, 1] = True
+        scores = score_component(_component(mask), SHAPE)
+        assert scores.flatness > 0.95
+        assert scores.orientation > 0.95
+        assert scores.proximity > 0.9
+
+    # test_central_slab_proximity_score_low: a flat slab in the centre has a low proximity score
+    def test_central_slab_proximity_score_low(self) -> None:
+        mask = np.zeros(SHAPE, dtype=bool)
+        mask[10:50, 10:50, 32] = True
+        scores = score_component(_component(mask), SHAPE)
+        assert scores.flatness > 0.95
+        assert scores.proximity < 0.2
+        assert scores.orientation > 0.95
+
+    # test_tilted_slab_orientation_score_low: a slab tilted off-axis has a low orientation score
+    def test_tilted_slab_orientation_score_low(self) -> None:
+        grid = np.indices(SHAPE)
+        mask = (np.abs(grid[0] + grid[2] - 40) < 1) & (grid[1] > 10) & (grid[1] < 50)
+        scores = score_component(_component(mask), SHAPE)
+        assert scores.orientation < 0.1
+        assert scores.flatness > 0.95
+
+    # test_non_slab_flatness_scores_low: a cube has a low flatness score
+    def test_non_slab_flatness_scores_low(self) -> None:
+        mask = np.zeros(SHAPE, dtype=bool)
+        mask[2:12, 2:12, 2:12] = True
+        scores = score_component(_component(mask), SHAPE)
+        assert scores.flatness < 0.1
+        assert scores.orientation > 0.95
+
+    # test_too_few_voxels_skips_scoring: components below the voxel limit are skipped so score zero for all
+    def test_too_few_voxels_skips_scoring(self) -> None:
+        mask = np.zeros(SHAPE, dtype=bool)
+        mask[0, 0:3, 0:3] = True
+        scores = score_component(_component(mask), SHAPE)
+        assert (scores.flatness, scores.orientation, scores.proximity) == (0.0, 0.0, 0.0)
