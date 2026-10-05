@@ -43,5 +43,15 @@ class Verdict:
     flagged: bool
     confidence: float
 
+# TrimReport: outcome of trimming one tomogram
+@dataclass(frozen=True)
+class TrimReport:
+    source: Path
+    output: Path
+    scores: Path
+    total: int
+    removed: int
+    removed_voxels: int
+
 # VoxelSize: voxel edge lengths in Å (x,y,z)
 type VoxelSize = tuple[float, float, float]

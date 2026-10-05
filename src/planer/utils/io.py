@@ -3,11 +3,11 @@ planer: input/output utility functions
 '''
 
 # Import external dependencies
-import mrcfile, numpy as np
+import csv, mrcfile, numpy as np
 from pathlib import Path
 
 # Import internal planer objects
-from planer.utils.schema import VoxelSize
+from planer.utils.schema import ScoredComponent, Verdict, VoxelSize
 
 # read_mrc: read volume from MRC file along with voxel size
 def read_mrc(path: Path) -> tuple[np.ndarray, VoxelSize]:
@@ -30,3 +30,19 @@ def write_mrc(
     with mrcfile.new(path, overwrite=overwrite) as mrc:
         mrc.set_data(data)
         mrc.voxel_size = voxel_size
+
+# write_scores: save per-component scores and verdicts as csv file
+def write_scores(path: Path, scored: list[ScoredComponent], verdicts: list[Verdict]) -> None:
+    with path.open('w', newline='') as handle:
+        writer = csv.writer(handle)
+        writer.writerow(['label', 'voxels', 'flatness', 'orientation', 'proximity', 'confidence', 'flagged'])
+        for item, verdict in zip(scored, verdicts):
+            writer.writerow([
+                item.component.label,
+                len(item.component.coords),
+                f'{item.scores.flatness:.4f}',
+                f'{item.scores.orientation:.4f}',
+                f'{item.scores.proximity:.4f}',
+                f'{verdict.confidence:.4f}',
+                int(verdict.flagged),
+            ])
