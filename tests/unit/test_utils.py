@@ -9,7 +9,8 @@ from pathlib import Path
 # Import internal planer objects
 from planer.utils.components import extract_components
 from planer.utils.io import read_mrc, write_mrc
-from planer.utils.schema import Component
+from planer.utils.judgement import THRESHOLDS, combine, judge, resolve_threshold
+from planer.utils.schema import Component, Scores, Severity
 from planer.utils.scoring import score_component, score_volume
 
 # SHAPE: example volume shape
@@ -58,6 +59,35 @@ class TestIo:
         with pytest.raises(ValueError):
             write_mrc(tmp_path / 'a.mrc', data, (1.0, 1.0, 1.0))
         write_mrc(tmp_path / 'a.mrc', data, (1.0, 1.0, 1.0), overwrite=True)
+
+# TestJudgement: tests for src/planer/utils/judgement.py
+class TestJudgement:
+    # test_all_scores_high_is_flagged: three high scores get flagged at each severity level
+    def test_all_scores_high_is_flagged(self) -> None:
+        scores = Scores(flatness=1.0, orientation=1.0, proximity=0.95)
+        assert all(judge(scores, level).flagged for level in Severity)
+
+    # test_one_score_disagrees_blocks_flag: a near-zero score blocks flagging even when the others are perfect
+    def test_one_score_disagrees_blocks_flag(self) -> None:
+        scores = Scores(flatness=1.0, orientation=1.0, proximity=0.01)
+        assert not judge(scores, Severity.HIGH).flagged
+
+    # test_flag_depends_on_severity: marginal components flag only at looser severities
+    def test_flag_depends_on_severity(self) -> None:
+        scores = Scores(flatness=0.8, orientation=0.8, proximity=0.8)
+        assert combine(scores) == pytest.approx(0.8)
+        assert not judge(scores, Severity.LOW).flagged
+        assert judge(scores, Severity.MEDIUM).flagged
+        assert judge(scores, Severity.HIGH).flagged
+
+    # test_explicit_threshold_overrides_presets: a float cutoff overrides the presets
+    def test_explicit_threshold_overrides_presets(self) -> None:
+        scores = Scores(flatness=0.8, orientation=0.8, proximity=0.8)
+        assert judge(scores, 0.79).flagged
+        assert not judge(scores, 0.81).flagged
+        assert resolve_threshold(Severity.MEDIUM) == THRESHOLDS[Severity.MEDIUM]
+        with pytest.raises(ValueError):
+            resolve_threshold(1.5)
 
 # TestScoring: tests for src/planer/utils/scoring.py
 class TestScoring:

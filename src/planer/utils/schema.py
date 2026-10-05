@@ -4,6 +4,7 @@ planer: schema objects used in planer
 
 # Import external dependencies
 from dataclasses import dataclass
+from enum import StrEnum
 
 # Component: one connected foreground region as voxel indices in volume space
 @dataclass(frozen=True)
@@ -29,6 +30,18 @@ class Scores:
 class ScoredComponent:
     component: Component
     scores: Scores
+
+# Severity: levels for how aggressively boundary box artefacts are flagged
+class Severity(StrEnum):
+    LOW = 'low'
+    MEDIUM = 'medium'
+    HIGH = 'high'
+
+# Verdict: whether a component is flagged for removal, and how confident the judgment is
+@dataclass(frozen=True)
+class Verdict:
+    flagged: bool
+    confidence: float
 
 # VoxelSize: voxel edge lengths in Å (x,y,z)
 type VoxelSize = tuple[float, float, float]
