@@ -70,6 +70,6 @@ def view_command(
     try:
         from planer.view import launch_view
     except ImportError:
-        typer.echo('planer view requires the dependency group "view" to be installed: uv tool install git+https://github.com/holsam/planer[view]', err=True)
+        typer.echo('planer view requires the dependency group "view" to be installed: uv tool install git+"https://github.com/holsam/planer[view]"', err=True)
         raise typer.Exit(code=1)
     launch_view(volume, cutoff=cutoff)
