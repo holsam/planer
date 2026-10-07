@@ -22,7 +22,7 @@ class TestCli:
         volume[10:50, 10:50, 1] = 1
         source = tmp_path / 'tomo.mrc'
         write_mrc(source, volume, (1.0, 1.0, 1.0))
-        result = runner.invoke(app, [str(source), '-o', str(tmp_path / 'out')])
+        result = runner.invoke(app, ['trim', str(source), '-o', str(tmp_path / 'out')])
         # assert result.exit_code == 0
         assert 'removed 1/1' in result.output
         assert (tmp_path / 'out' / 'tomo_trimmed.mrc').exists()
