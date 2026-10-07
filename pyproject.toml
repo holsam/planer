@@ -1,6 +1,6 @@
 [project]
 name = "planer"
-version = "0.0.0"
+version = "0.1.0"
 description = "Detect and remove boundary arterfacts from membrane segmentations"
 readme = "README.md"
 authors = [
