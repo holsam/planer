@@ -27,16 +27,16 @@ uv tool install git+"https://github.com/holsam/planer[view]"
 Planer features two commands: `trim` and `view`. 
 
 ### `planer trim`
-`planer trim` accepts an MRC file (or multiple of these) and runs the planer workflow with the specified severity or threshold (default: medium severity). It then writes the cleaned MRC file to the specified output directory (default: current working directory).
+`planer trim` accepts an MRC file (or multiple of these) and runs the planer workflow with the specified severity or threshold (default: moderate severity). It then writes the cleaned MRC file to the specified output directory (default: current working directory).
 
 ```sh
-planer trim [-o <output-directory>] [--severity low|medium|high] [--threshold <float>] <file.mrc>
+planer trim [-o <output-directory>] [--severity lenient|moderate|strict] [--threshold <float>] <file.mrc>
 ```
 
 ### `planer view`
 `planer view` accepts an MRC file, and runs the planer workflow at each severity level. It launches a napari window with the following layers:
 - `segmentation`: the complete segmentation volume
-- `removed: [high|medium|low]`: each layer shows the components removed at the respective severity level
+- `removed: [lenient|moderate|strict]`: each layer shows the components removed at the respective severity level
 - `removed: custom`: the components removed at a custom threshold set by the cutoff slider
 
 ```sh

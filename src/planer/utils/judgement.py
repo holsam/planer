@@ -7,9 +7,9 @@ from planer.utils.schema import Scores, Severity, Verdict
 
 # THRESHOLDS: confidence cutoff per severity
 THRESHOLDS: dict[Severity, float] = {
-    Severity.LOW: 0.85,
-    Severity.MEDIUM: 0.70,
-    Severity.HIGH: 0.55,
+    Severity.LENIENT: 0.85,
+    Severity.MODERATE: 0.70,
+    Severity.STRICT: 0.55,
 }
 
 # combine: calculate the geometric mean of all three scores

@@ -70,22 +70,22 @@ class TestJudgement:
     # test_one_score_disagrees_blocks_flag: a near-zero score blocks flagging even when the others are perfect
     def test_one_score_disagrees_blocks_flag(self) -> None:
         scores = Scores(flatness=1.0, orientation=1.0, proximity=0.01)
-        assert not judge(scores, Severity.HIGH).flagged
+        assert not judge(scores, Severity.STRICT).flagged
 
-    # test_flag_depends_on_severity: marginal components flag only at looser severities
+    # test_flag_depends_on_severity: marginal components flag only at stricter severities
     def test_flag_depends_on_severity(self) -> None:
         scores = Scores(flatness=0.8, orientation=0.8, proximity=0.8)
         assert combine(scores) == pytest.approx(0.8)
-        assert not judge(scores, Severity.LOW).flagged
-        assert judge(scores, Severity.MEDIUM).flagged
-        assert judge(scores, Severity.HIGH).flagged
+        assert not judge(scores, Severity.LENIENT).flagged
+        assert judge(scores, Severity.MODERATE).flagged
+        assert judge(scores, Severity.STRICT).flagged
 
     # test_explicit_threshold_overrides_presets: a float cutoff overrides the presets
     def test_explicit_threshold_overrides_presets(self) -> None:
         scores = Scores(flatness=0.8, orientation=0.8, proximity=0.8)
         assert judge(scores, 0.79).flagged
         assert not judge(scores, 0.81).flagged
-        assert resolve_threshold(Severity.MEDIUM) == THRESHOLDS[Severity.MEDIUM]
+        assert resolve_threshold(Severity.MODERATE) == THRESHOLDS[Severity.MODERATE]
         with pytest.raises(ValueError):
             resolve_threshold(1.5)
 

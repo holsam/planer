@@ -21,11 +21,11 @@ SEGMENTATION_COLOURS = {
     1: (0.5, 0.5, 0.5, 1.0),
 }
 
-# SEVERITY_RGBA: red strictest, orange medium, yellow loosest
+# SEVERITY_RGBA: red strict, orange moderate, yellow lenient
 SEVERITY_RGBA = {
-    Severity.LOW: (0.9, 0.1, 0.1, 1.0),
-    Severity.MEDIUM: (1.0, 0.55, 0.0, 1.0),
-    Severity.HIGH: (1.0, 0.9, 0.0, 1.0),
+    Severity.STRICT: (0.9, 0.1, 0.1, 1.0),
+    Severity.MODERATE: (1.0, 0.55, 0.0, 1.0),
+    Severity.LENIENT: (1.0, 0.9, 0.0, 1.0),
 }
 
 # CUTOFF_COLOURS: highlight for components removed at the slider cutoff
@@ -49,7 +49,7 @@ def launch_view(path: Path, *, cutoff: float = 0.62) -> None:
         name='segmentation',
         colormap=DirectLabelColormap(color_dict=SEGMENTATION_COLOURS),
     )
-    for severity in (Severity.LOW, Severity.MEDIUM, Severity.HIGH):
+    for severity in (Severity.LENIENT, Severity.MODERATE, Severity.STRICT):
         viewer.add_labels(
             _paint(shape, scored, (confidences >= THRESHOLDS[severity]).astype(np.uint8)),
             name=f'removed: {severity.value}',
