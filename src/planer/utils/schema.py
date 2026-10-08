@@ -33,9 +33,9 @@ class ScoredComponent:
 
 # Severity: levels for how aggressively boundary box artefacts are flagged
 class Severity(StrEnum):
-    LOW = 'low'
-    MEDIUM = 'medium'
-    HIGH = 'high'
+    LENIENT = 'lenient'
+    MODERATE = 'moderate'
+    STRICT = 'strict'
 
 # Verdict: whether a component is flagged for removal, and how confident the judgment is
 @dataclass(frozen=True)
