@@ -28,7 +28,7 @@ SEVERITY_RGBA = {
     Severity.HIGH: (1.0, 0.9, 0.0, 1.0),
 }
 
-# CUTOFF_COLOURS: highlight for components flagged at the slider cutoff
+# CUTOFF_COLOURS: highlight for components removed at the slider cutoff
 CUTOFF_COLOURS = {
     None: (0.0, 0.0, 0.0, 0.0),
     0: (0.0, 0.0, 0.0, 0.0),
@@ -60,18 +60,16 @@ def launch_view(path: Path, *, cutoff: float = 0.62) -> None:
         )
     highlight = viewer.add_labels(
         _paint(shape, scored, (confidences >= cutoff).astype(np.uint8)),
-        name='flagged at cutoff',
+        name='removed: custom',
         colormap=DirectLabelColormap(color_dict=CUTOFF_COLOURS),
     )
 
     @magicgui(
         auto_call=True,
         cutoff={'widget_type': 'FloatSlider', 'min': 0.0, 'max': 1.0, 'step': 0.01},
-        preset={'choices': ['custom', *[level.value for level in Severity]]},
     )
-    def controls(cutoff: float = cutoff, preset: str = 'custom') -> None:
-        threshold = cutoff if preset == 'custom' else THRESHOLDS[Severity(preset)]
-        highlight.data = _paint(shape, scored, (confidences >= threshold).astype(np.uint8))
+    def controls(cutoff: float = cutoff) -> None:
+        highlight.data = _paint(shape, scored, (confidences >= cutoff).astype(np.uint8))
 
     viewer.window.add_dock_widget(controls, name='threshold')
     napari.run()
