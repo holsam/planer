@@ -34,7 +34,10 @@ planer trim [-o <output-directory>] [--severity low|medium|high] [--threshold <f
 ```
 
 ### `planer view`
-`planer view` accepts an MRC file, and runs the planer workflow at each severity level. It launches a napari window which shows the segmentation volume and its components, colour-coded by the severity level required to remove them. A slider allows custom thresholds to be visualised as well.
+`planer view` accepts an MRC file, and runs the planer workflow at each severity level. It launches a napari window with the following layers:
+- `segmentation`: the complete segmentation volume
+- `removed: [high|medium|low]`: each layer shows the components removed at the respective severity level
+- `removed: custom`: the components removed at a custom threshold set by the cutoff slider
 
 ```sh
 planer view <file.mrc>
