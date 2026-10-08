@@ -32,7 +32,7 @@ def trim_command(
     severity: Annotated[
         Severity,
         typer.Option(help='Strictness preset to use for trimming.')
-    ] = Severity.MEDIUM,
+    ] = Severity.MODERATE,
     threshold: Annotated[
         float | None,
         typer.Option(min=0.0, max=1.0, help='Explicit cutoff, overrides severity.')

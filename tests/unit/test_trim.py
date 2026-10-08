@@ -24,7 +24,7 @@ class TestTrim:
     def test_trim_removes_slab_only(self, tmp_path: Path) -> None:
         source = tmp_path / 'tomo.mrc'
         _write_sample(source)
-        report = trim_volume(source, tmp_path / 'out', Severity.MEDIUM)
+        report = trim_volume(source, tmp_path / 'out', Severity.MODERATE)
         cleaned, voxel_size = read_mrc(report.output)
         assert (report.total, report.removed) == (2, 1)
         assert cleaned[:, :, 1].sum() == 0
@@ -36,7 +36,7 @@ class TestTrim:
     def test_refuses_overwrite_unless_explicit(self, tmp_path: Path) -> None:
         source = tmp_path / 'tomo.mrc'
         _write_sample(source)
-        trim_volume(source, tmp_path / 'out', Severity.MEDIUM)
+        trim_volume(source, tmp_path / 'out', Severity.MODERATE)
         with pytest.raises(FileExistsError):
-            trim_volume(source, tmp_path / 'out', Severity.MEDIUM)
-        trim_volume(source, tmp_path / 'out', Severity.MEDIUM, overwrite=True)
+            trim_volume(source, tmp_path / 'out', Severity.MODERATE)
+        trim_volume(source, tmp_path / 'out', Severity.MODERATE, overwrite=True)
